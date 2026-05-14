@@ -270,9 +270,6 @@ function PublicSite({ projects, seo, onAdmin }) {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "28px 20px" : "48px 40px" }}>
               <div style={{ maxWidth: "80%", margin: "0 auto" }}>
-              <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", justifyContent: "center" }}>
-                {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.5)", background: "rgba(255,255,255,.1)", padding: "4px 10px" }}>{c}</span>)}
-              </div>
               <h1 style={{ fontSize: isMobile ? "clamp(32px,9vw,52px)" : "clamp(48px,6vw,88px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .93, color: "#fff", marginBottom: 14, textAlign: "center" }}>{active.title}</h1>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center" }}>{active.subtitle} — {active.location}, {active.year}</div>
               </div>
@@ -280,7 +277,21 @@ function PublicSite({ projects, seo, onAdmin }) {
           </div>
           <div style={{ padding: isMobile ? "52px 20px 100px" : `96px ${px} 140px` }}>
             <div style={{ maxWidth: "80%", margin: "0 auto" }}>
-            <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, marginBottom: 56, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
+            {isMobile ? (
+              <>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
+                  {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
+                </div>
+                <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, marginBottom: 56, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
+              </>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 56 }}>
+                <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
+                </div>
+              </div>
+            )}
             <p style={{ ...HN, fontSize: isMobile ? 17 : 20, fontWeight: 700, lineHeight: 1.75, color: "#fff", letterSpacing: "-.01em", marginBottom: isMobile ? 12 : 16, textAlign: "center" }}>{active.desc}</p>
             {(active.blocks || []).map(b => <ContentBlock key={b.id} block={b} isMobile={isMobile} />)}
             <div style={{ marginTop: 80, paddingTop: 48, borderTop: "1px solid rgba(255,255,255,.07)" }}>
