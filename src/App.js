@@ -119,13 +119,24 @@ function ContentBlock({ block, isMobile }) {
     const layout = block.layout || "wide"; const type = block.type;
     if (isMobile) {
       const slots = layout === "wide" ? [block.src] : layout === "two-square" ? [block.src, block.src2] : [block.src, block.src2, block.src3];
-      const mobileRatio = layout === "three-vertical" ? "9/16" : layout === "two-square" ? "1/1" : "16/9";
       return (
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {slots.map((s, i) => <MediaSlot key={i} src={s} type={type} caption={block.caption} ratio={mobileRatio} />)}
+        <div style={{ marginBottom: 24, marginLeft: "calc(-100vw * 0.1)", marginRight: "calc(-100vw * 0.1)", width: "calc(100% + 100vw * 0.2)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {slots.map((s, i) => {
+              if (!s && !block.caption) return null;
+              return (
+                <div key={i} style={{ width: "100%", aspectRatio: layout === "three-vertical" ? "9/16" : layout === "two-square" ? "1/1" : "16/9", background: "#111", overflow: "hidden" }}>
+                  {s
+                    ? type === "video"
+                      ? <video src={s} controls style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <img src={s} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <div style={{ width: "100%", height: "100%", background: "#111", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "rgba(255,255,255,.06)", fontSize: 28, fontWeight: 700, ...HN }}>—</span></div>
+                  }
+                </div>
+              );
+            })}
           </div>
-          {block.caption && <p style={{ ...HN, fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 10, letterSpacing: ".06em", textTransform: "uppercase" }}>{block.caption}</p>}
+          {block.caption && <p style={{ ...HN, fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 8, paddingLeft: "calc(100vw * 0.1)", letterSpacing: ".06em", textTransform: "uppercase" }}>{block.caption}</p>}
         </div>
       );
     }
@@ -226,10 +237,12 @@ function PublicSite({ projects, seo, onAdmin }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", overflow: "hidden", background: "#111" }}><ThumbMedia project={p} style={{ width: "100%", aspectRatio: "4/3" }} /></div>
-                  <div style={{ padding: "12px 0 20px" }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle} · {p.year}</div>
+                  <div style={{ width: "100%", overflow: "hidden", background: "#111" }}>
+                    <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
+                  </div>
+                  <div style={{ padding: "12px 0 4px" }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
