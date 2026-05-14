@@ -260,7 +260,7 @@ function PublicSite({ projects, seo, onAdmin }) {
           </div>
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56 }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
-              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "8px 18px 8px 0" : "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 17 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
+              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "10px 20px 10px 0" : "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 20 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
           {isMobile ? (
@@ -269,8 +269,8 @@ function PublicSite({ projects, seo, onAdmin }) {
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
                   <ThumbMedia project={p} />
                   <div style={{ padding: "14px 0 6px" }}>
-                    <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
-                    <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 6 }}>{p.subtitle}</div>
+                    <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
+                    <div style={{ fontSize: 17, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 6 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
