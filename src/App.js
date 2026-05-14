@@ -5,6 +5,19 @@ const HN = { fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" };
 const SUPABASE_URL = "https://wgvqmeiprhylmdluocsm.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndndnFtZWlwcmh5bG1kbHVvY3NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTk3NTQsImV4cCI6MjA5NDMzNTc1NH0.b9X-M8YGEDRgGeWLnI0N69feijzDPr-yo_b4mOxzlj0";
 
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+async function uploadFile(file) {
+  const ext = file.name.split(".").pop();
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/media/${name}`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": file.type },
+    body: file
+  });
+  if (!r.ok) throw new Error("Upload failed");
+  return `${SUPABASE_URL}/storage/v1/object/public/media/${name}`;
+}
+
 const db = {
   async getProjects() {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=id`, {
@@ -434,9 +447,12 @@ function BlockEditor({ block, onChange, onDelete, onUp, onDown }) {
   const refs = [useRef(), useRef(), useRef()];
   const inputStyle = { width: "100%", background: "#111", border: "1px solid rgba(255,255,255,.12)", color: "#fff", padding: "8px 12px", fontSize: 13, ...HN, outline: "none", borderRadius: 2 };
   const labelStyle = { fontSize: 10, letterSpacing: ".08em", color: "rgba(255,255,255,.5)", textTransform: "uppercase", display: "block", marginBottom: 6 };
-  const handleFile = (key) => (e) => {
+  const handleFile = (key) => async (e) => {
     const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = ev => onChange({ ...block, [key]: ev.target.result }); r.readAsDataURL(f);
+    try {
+      const url = await uploadFile(f);
+      onChange({ ...block, [key]: url });
+    } catch { alert("Upload failed, try again"); }
   };
   const slotCount = block.layout === "wide" ? 1 : block.layout === "two-square" ? 2 : 3;
   const slotKeys = ["src", "src2", "src3"];
@@ -533,8 +549,20 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
     const ni = i + dir; if (ni < 0 || ni >= arr.length) return;
     [arr[i], arr[ni]] = [arr[ni], arr[i]]; setForm({ ...form, blocks: arr });
   };
-  const handleCover = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setForm({ ...form, cover: ev.target.result }); r.readAsDataURL(f); };
-  const handleThumb = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setForm({ ...form, thumbnail: ev.target.result }); r.readAsDataURL(f); };
+  const handleCover = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    setSaving(true);
+    try { const url = await uploadFile(f); setForm(prev => ({ ...prev, cover: url })); }
+    catch { alert("Upload failed, try again"); }
+    setSaving(false);
+  };
+  const handleThumb = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    setSaving(true);
+    try { const url = await uploadFile(f); setForm(prev => ({ ...prev, thumbnail: url })); }
+    catch { alert("Upload failed, try again"); }
+    setSaving(false);
+  };
   const saveSeo = async () => {
     setSaving(true);
     setSeo(seoForm);
