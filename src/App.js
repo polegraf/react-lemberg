@@ -237,8 +237,8 @@ function PublicSite({ projects, seo, onAdmin }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", overflow: "hidden", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
+                  <div style={{ width: "100%", aspectRatio: "4/3", overflow: "hidden", background: "#111" }}>
+                    <ThumbMedia project={p} style={{ width: "100%", height: "100%" }} />
                   </div>
                   <div style={{ padding: "12px 0 4px" }}>
                     <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
