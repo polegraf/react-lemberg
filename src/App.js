@@ -245,10 +245,6 @@ function PublicSite({ projects, seo, onAdmin }) {
                       <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
                         <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
                       </div>
-                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.55)", opacity: hovered === p.id ? 1 : 0, transition: "opacity .3s", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "24px" }}>
-                        <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.02em", color: "#fff" }}>{p.title}</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 5 }}>{p.subtitle} — {p.year}</div>
-                      </div>
                     </div>
                     <div style={{ padding: "12px 0 18px", background: "#000" }}>
                       <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
