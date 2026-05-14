@@ -328,11 +328,11 @@ function PublicSite({ projects, seo, onAdmin }) {
               <CoverMedia project={active} style={{ width: "100%", height: "100%" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "28px 20px" : "48px 40px" }}>
-                <div style={{ maxWidth: "80%", margin: "0 auto" }}>
-                  <h1 style={{ fontSize: isMobile ? "clamp(32px,9vw,52px)" : "clamp(48px,6vw,88px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .93, color: "#fff", marginBottom: 14, textAlign: "center" }}>{active.title}</h1>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0 }}>{active.subtitle} — {active.location}, {active.year}</div>
+                <div style={{ width: "100%", maxWidth: isMobile ? "100%" : "80%", margin: "0 auto" }}>
+                  <h1 style={{ fontSize: isMobile ? "clamp(32px,9vw,52px)" : "clamp(48px,6vw,88px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .93, color: "#fff", marginBottom: 14, textAlign: "center", width: "100%" }}>{active.title}</h1>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0, width: "100%" }}>{active.subtitle} {active.location} {active.year}</div>
                   {isMobile && (
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: "calc(13px * 1.2)" }}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: "calc(13px * 1.2)", width: "100%" }}>
                       {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
                     </div>
                   )}
@@ -341,10 +341,10 @@ function PublicSite({ projects, seo, onAdmin }) {
             </div>
           ) : (
             <div style={{ width: "100%", padding: isMobile ? `${56 * 1.2}px 20px 48px` : "96px 40px 72px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-              <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14 }}>{active.title}</h1>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0 }}>{active.subtitle} — {active.location}, {active.year}</div>
+              <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14, width: "100%" }}>{active.title}</h1>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0, width: "100%" }}>{active.subtitle} {active.location} {active.year}</div>
               {isMobile && (
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: "calc(13px * 1.2)" }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: "calc(13px * 1.2)", width: "100%" }}>
                   {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
                 </div>
               )}
