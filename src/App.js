@@ -29,7 +29,11 @@ const INITIAL_SEO = {
   tagline: "Design — Illustration — Art Direction",
   metaTitle: "Portfolio — Designer & Illustrator",
   metaDesc: "Designer and illustrator. Visual systems, brand identities, editorial content.",
-  ogImage: "", email: "hello@yourname.com", instagram: "@yourname", behance: "behance.net/yourname",
+  ogImage: "", email: "hello@yourname.com",
+  instagram: "", instagramUrl: "https://instagram.com/yourname",
+  whatsapp: "", whatsappUrl: "https://wa.me/1234567890",
+  behance: "behance.net/yourname",
+  adminPassword: "1234",
 };
 
 const CATEGORIES = ["all", "brand", "logo", "packaging", "ui", "photo", "motion", "print", "illustration"];
@@ -157,7 +161,16 @@ function PublicSite({ projects, seo, onAdmin }) {
   const [active, setActive] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [pwPrompt, setPwPrompt] = useState(false);
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
   const isMobile = useIsMobile();
+
+  const handleAdminClick = () => { setPwPrompt(true); setPwInput(""); setPwError(false); };
+  const handleAdminSubmit = () => {
+    if (pwInput === (seo.adminPassword || "1234")) { setPwPrompt(false); onAdmin(); }
+    else { setPwError(true); }
+  };
 
   const filtered = filter === "all" ? projects : projects.filter(p => p.category.includes(filter));
   const px = isMobile ? "20px" : "40px";
@@ -181,9 +194,26 @@ function PublicSite({ projects, seo, onAdmin }) {
           {[["index", "Work"], ["contact", "Contact"]].map(([v, l]) => (
             <span key={v} onClick={() => setView(v)} style={{ fontSize: 13, cursor: "pointer", color: view === v ? "#fff" : "rgba(255,255,255,.4)", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", transition: "color .15s" }}>{l}</span>
           ))}
-          <span onClick={onAdmin} style={{ fontSize: 11, color: "rgba(255,255,255,.15)", cursor: "pointer", letterSpacing: ".06em", textTransform: "uppercase" }}>Admin</span>
+          <span onClick={handleAdminClick} style={{ fontSize: 32, color: "#fff", cursor: "pointer", fontWeight: 400, lineHeight: 1, userSelect: "none" }}>✳</span>
         </div>
       </nav>
+
+      {/* ── PASSWORD MODAL ── */}
+      {pwPrompt && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setPwPrompt(false)}>
+          <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.1)", padding: "40px 48px", minWidth: 320 }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 11, letterSpacing: ".1em", color: "rgba(255,255,255,.35)", textTransform: "uppercase", marginBottom: 28 }}>Enter password</div>
+            <input autoFocus type="password" value={pwInput} onChange={e => { setPwInput(e.target.value); setPwError(false); }}
+              onKeyDown={e => e.key === "Enter" && handleAdminSubmit()}
+              style={{ width: "100%", background: "transparent", border: "none", borderBottom: `1px solid ${pwError ? "rgba(255,80,80,.6)" : "rgba(255,255,255,.2)"}`, color: "#fff", fontSize: 24, fontWeight: 700, padding: "8px 0", outline: "none", ...HN, marginBottom: 8 }} />
+            {pwError && <div style={{ fontSize: 11, color: "rgba(255,80,80,.7)", letterSpacing: ".06em", marginTop: 8 }}>Incorrect password</div>}
+            <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
+              <button onClick={handleAdminSubmit} style={{ padding: "10px 24px", background: "#fff", color: "#000", border: "none", fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Enter →</button>
+              <button onClick={() => setPwPrompt(false)} style={{ padding: "10px 16px", background: "transparent", color: "rgba(255,255,255,.3)", border: "1px solid rgba(255,255,255,.1)", fontSize: 11, cursor: "pointer", ...HN }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── INDEX ── */}
       {view === "index" && (
@@ -316,9 +346,25 @@ function PublicSite({ projects, seo, onAdmin }) {
       )}
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,.07)", padding: `24px ${px}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,.07)", padding: `24px ${px}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <span style={{ fontSize: 12, color: "rgba(255,255,255,.25)", letterSpacing: ".04em" }}>© {new Date().getFullYear()} {seo.siteName}</span>
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,.25)", letterSpacing: ".04em" }}>{seo.email}</span>
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          {seo.instagramUrl && (
+            <a href={seo.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", display: "flex" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+              </svg>
+            </a>
+          )}
+          {seo.whatsappUrl && (
+            <a href={seo.whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", display: "flex" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+            </a>
+          )}
+          <span style={{ fontSize: 12, color: "#fff", letterSpacing: ".04em" }}>{seo.email}</span>
+        </div>
       </footer>
     </div>
   );
@@ -627,7 +673,7 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
               <div style={{ fontSize: 13, color: "#545454", lineHeight: 1.5, fontFamily: "Arial, sans-serif" }}>{seoForm.metaDesc || "Your description"}</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {[{ k: "siteName", l: "Site name" }, { k: "tagline", l: "Tagline" }, { k: "metaTitle", l: "Meta title", max: 60 }, { k: "email", l: "Email" }, { k: "instagram", l: "Instagram" }, { k: "behance", l: "Behance" }, { k: "ogImage", l: "OG image URL" }].map(({ k, l, max }) => (
+              {[{ k: "siteName", l: "Site name" }, { k: "tagline", l: "Tagline" }, { k: "metaTitle", l: "Meta title", max: 60 }, { k: "email", l: "Email" }, { k: "instagramUrl", l: "Instagram URL" }, { k: "whatsappUrl", l: "WhatsApp URL (wa.me/...)" }, { k: "behance", l: "Behance" }, { k: "ogImage", l: "OG image URL" }, { k: "adminPassword", l: "Admin password" }].map(({ k, l, max }) => (
                 <div key={k}>
                   <label style={{ ...labelStyle, display: "flex", justifyContent: "space-between" }}>
                     <span>{l}</span>
