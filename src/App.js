@@ -14,17 +14,47 @@ const db = {
     return Array.isArray(rows) ? rows.map(r => ({ ...r.data, _dbId: r.id })) : [];
   },
   async saveProjects(projects) {
-    // Delete all and re-insert
-    await fetch(`${SUPABASE_URL}/rest/v1/projects?id=gte.0`, {
-      method: "DELETE",
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" }
+    // Safe: upsert all current projects, then delete removed ones
+    if (projects.length === 0) {
+      await fetch(`${SUPABASE_URL}/rest/v1/projects?id=gte.0`, {
+        method: "DELETE",
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+      });
+      return;
+    }
+    // Upsert each project by its app-level id stored in data->id
+    // First get existing db rows to know which to delete
+    const getR = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=id,data`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
-    if (projects.length === 0) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
-      method: "POST",
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-      body: JSON.stringify(projects.map(p => ({ data: p })))
-    });
+    const existing = await getR.json();
+    const existingIds = Array.isArray(existing) ? existing.map(r => r.data?.id) : [];
+    const currentIds = projects.map(p => p.id);
+    // Delete projects that were removed
+    const toDelete = Array.isArray(existing) ? existing.filter(r => !currentIds.includes(r.data?.id)) : [];
+    for (const row of toDelete) {
+      await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${row.id}`, {
+        method: "DELETE",
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+      });
+    }
+    // Upsert existing or insert new
+    for (const project of projects) {
+      const existingRow = Array.isArray(existing) ? existing.find(r => r.data?.id === project.id) : null;
+      if (existingRow) {
+        await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${existingRow.id}`, {
+          method: "PATCH",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ data: project })
+        });
+      } else {
+        await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
+          method: "POST",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ data: project })
+        });
+      }
+    }
   },
   async getSettings() {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.seo&select=*`, {
