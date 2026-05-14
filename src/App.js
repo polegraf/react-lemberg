@@ -109,9 +109,9 @@ function MediaSlot({ src, type, caption, ratio }) {
 }
 
 function ContentBlock({ block, isMobile }) {
-  if (block.type === "text") return <p style={{ ...HN, fontSize: isMobile ? 17 : 20, lineHeight: 1.75, color: "rgba(255,255,255,.85)", marginBottom: 12, fontWeight: 400 }}>{block.content}</p>;
+  if (block.type === "text") return <p style={{ ...HN, fontSize: isMobile ? 17 : 20, lineHeight: 1.75, color: "rgba(255,255,255,.85)", marginBottom: 12, fontWeight: 300, textAlign: "center" }}>{block.content}</p>;
   if (block.type === "quote") return (
-    <blockquote style={{ margin: "0 0 56px", padding: "0 0 0 28px", borderLeft: "2px solid rgba(255,255,255,.2)" }}>
+    <blockquote style={{ margin: "0 0 56px", padding: 0, textAlign: "center" }}>
       <p style={{ ...HN, fontSize: isMobile ? 24 : 32, fontWeight: 700, lineHeight: 1.25, color: "#fff", letterSpacing: "-.03em" }}>{block.content}</p>
     </blockquote>
   );
@@ -277,11 +277,13 @@ function PublicSite({ projects, seo, onAdmin }) {
             </div>
           </div>
           <div style={{ padding: isMobile ? "52px 20px 100px" : `96px ${px} 140px` }}>
+            <div style={{ maxWidth: "80%", margin: "0 auto" }}>
             <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, marginBottom: 56, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
-            <p style={{ ...HN, fontSize: isMobile ? 20 : 26, fontWeight: 700, lineHeight: 1.35, color: "#fff", letterSpacing: "-.025em", marginBottom: isMobile ? 12 : 16 }}>{active.desc}</p>
+            <p style={{ ...HN, fontSize: isMobile ? 17 : 20, fontWeight: 700, lineHeight: 1.75, color: "#fff", letterSpacing: "-.01em", marginBottom: isMobile ? 12 : 16, textAlign: "center" }}>{active.desc}</p>
             {(active.blocks || []).map(b => <ContentBlock key={b.id} block={b} isMobile={isMobile} />)}
             <div style={{ marginTop: 80, paddingTop: 48, borderTop: "1px solid rgba(255,255,255,.07)" }}>
               <button onClick={() => setView("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 32px", background: "#fff", color: "#000", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Start a project →</button>
+            </div>
             </div>
           </div>
         </div>
