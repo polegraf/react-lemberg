@@ -2,21 +2,48 @@ import React, { useState, useRef, useEffect } from "react";
 
 const HN = { fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" };
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const INITIAL_PROJECTS = [
-  {
-    id: 1, title: "Forma Studio", subtitle: "Brand Identity", category: ["brand", "logo"],
-    year: "2024", location: "Moscow", coverType: "image", cover: "",
-    desc: "Visual identity system for an architecture studio. Minimalism, space, materiality.",
-    blocks: [
-      { id: "b1", type: "text", content: "The brief called for a system that could scale from a business card to a building hoarding without losing its quiet authority." },
-      { id: "b2", type: "image", layout: "wide", src: "", src2: "", src3: "", caption: "Primary logotype" },
-      { id: "b3", type: "text", content: "Typography is set in a bespoke condensed grotesque. Colour palette: one ink, one paper." },
-      { id: "b4", type: "image", layout: "two-square", src: "", src2: "", src3: "", caption: "" },
-      { id: "b5", type: "image", layout: "three-vertical", src: "", src2: "", src3: "", caption: "Campaign visuals" },
-    ],
-    featured: true,
+const SUPABASE_URL = "https://wgvqmeiprhylmdluocsm.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndndnFtZWlwcmh5bG1kbHVvY3NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTk3NTQsImV4cCI6MjA5NDMzNTc1NH0.b9X-M8YGEDRgGeWLnI0N69feijzDPr-yo_b4mOxzlj0";
+
+const db = {
+  async getProjects() {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=id`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    const rows = await r.json();
+    return Array.isArray(rows) ? rows.map(r => ({ ...r.data, _dbId: r.id })) : [];
   },
+  async saveProjects(projects) {
+    // Delete all and re-insert
+    await fetch(`${SUPABASE_URL}/rest/v1/projects?id=gte.0`, {
+      method: "DELETE",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json" }
+    });
+    if (projects.length === 0) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify(projects.map(p => ({ data: p })))
+    });
+  },
+  async getSettings() {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.seo&select=*`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    const rows = await r.json();
+    return rows?.[0]?.data || null;
+  },
+  async saveSettings(seo) {
+    await fetch(`${SUPABASE_URL}/rest/v1/settings`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify({ id: "seo", data: seo })
+    });
+  }
+};
+
+const DEFAULT_PROJECTS = [
+  { id: 1, title: "Forma Studio", subtitle: "Brand Identity", category: ["brand", "logo"], year: "2024", location: "Moscow", coverType: "image", cover: "", desc: "Visual identity system for an architecture studio. Minimalism, space, materiality.", blocks: [], featured: true },
   { id: 2, title: "Zima", subtitle: "Packaging Design", category: ["packaging"], year: "2024", location: "St. Petersburg", coverType: "image", cover: "", desc: "Packaging for a natural cosmetics line. Inspired by winter forest, frost, whiteness.", blocks: [], featured: false },
   { id: 3, title: "Pulse", subtitle: "UI/UX Design", category: ["ui"], year: "2023", location: "Berlin", coverType: "video", cover: "", desc: "Mobile app design for health tracking and meditation.", blocks: [], featured: true },
   { id: 4, title: "Svet Magazine", subtitle: "Editorial Design", category: ["print"], year: "2023", location: "Moscow", coverType: "image", cover: "", desc: "Layout and art direction for a cultural magazine. 84 pages.", blocks: [], featured: false },
@@ -24,16 +51,13 @@ const INITIAL_PROJECTS = [
   { id: 6, title: "Roots", subtitle: "Photography Series", category: ["photo"], year: "2022", location: "Tbilisi", coverType: "image", cover: "", desc: "Documentary series on post-Soviet urban architecture.", blocks: [], featured: false },
 ];
 
-const INITIAL_SEO = {
-  siteName: "Your Name",
-  tagline: "Design — Illustration — Art Direction",
-  metaTitle: "Portfolio — Designer & Illustrator",
-  metaDesc: "Designer and illustrator. Visual systems, brand identities, editorial content.",
+const DEFAULT_SEO = {
+  siteName: "Your Name", tagline: "Graphic Design — Art Direction — Brand Creation",
+  metaTitle: "Portfolio — Designer & Art Director",
+  metaDesc: "Designer and art director. Visual systems, brand identities, editorial content.",
   ogImage: "", email: "hello@yourname.com",
-  instagram: "", instagramUrl: "https://instagram.com/yourname",
-  whatsapp: "", whatsappUrl: "https://wa.me/1234567890",
-  behance: "behance.net/yourname",
-  adminPassword: "1234",
+  instagram: "", instagramUrl: "", whatsapp: "", whatsappUrl: "",
+  behance: "", adminPassword: "1234",
 };
 
 const CATEGORIES = ["all", "brand", "logo", "packaging", "ui", "photo", "motion", "print", "illustration"];
@@ -41,7 +65,6 @@ const BLOCK_TYPES = ["text", "quote", "image", "video"];
 const LAYOUTS = ["wide", "two-square", "three-vertical"];
 const LAYOUT_LABELS = { "wide": "1 wide (16:9)", "two-square": "2 square (1:1)", "three-vertical": "3 vertical (9:16)" };
 
-// ─── HOOKS ────────────────────────────────────────────────────────────────────
 function useIsMobile() {
   const [mobile, setMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -52,7 +75,6 @@ function useIsMobile() {
   return mobile;
 }
 
-// ─── PLACEHOLDER ──────────────────────────────────────────────────────────────
 function Placeholder({ title, type }) {
   const letters = (title || "").split(" ").slice(0, 2).map(w => w[0] || "").join("").toUpperCase() || "—";
   return (
@@ -61,20 +83,17 @@ function Placeholder({ title, type }) {
         ? <div style={{ width: 44, height: 44, borderRadius: "50%", border: "1px solid rgba(255,255,255,.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderLeft: "14px solid rgba(255,255,255,.3)", marginLeft: 3 }} />
           </div>
-        : <span style={{ ...HN, fontSize: 36, fontWeight: 700, color: "rgba(255,255,255,.06)" }}>{letters}</span>
-      }
+        : <span style={{ ...HN, fontSize: 36, fontWeight: 700, color: "rgba(255,255,255,.06)" }}>{letters}</span>}
     </div>
   );
 }
 
-// ─── COVER MEDIA ──────────────────────────────────────────────────────────────
 function CoverMedia({ project, style }) {
   if (!project.cover) return <div style={style}><Placeholder title={project.title} type={project.coverType} /></div>;
   if (project.coverType === "video") return <div style={{ ...style, overflow: "hidden" }}><video src={project.cover} autoPlay muted loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
   return <div style={{ ...style, overflow: "hidden" }}><img src={project.cover} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
 }
 
-// ─── THUMB MEDIA (index grid — uses thumbnail, falls back to cover) ────────────
 function ThumbMedia({ project, style }) {
   const src = project.thumbnail || project.cover;
   const type = project.thumbnail ? (project.thumbType || "image") : project.coverType;
@@ -83,32 +102,22 @@ function ThumbMedia({ project, style }) {
   return <div style={{ ...style, overflow: "hidden" }}><img src={src} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
 }
 
-// ─── MEDIA SLOT ───────────────────────────────────────────────────────────────
 function MediaSlot({ src, type, caption, ratio }) {
   if (!src) return <div style={{ width: "100%", aspectRatio: ratio, background: "#111", overflow: "hidden" }}><Placeholder title={caption} type={type} /></div>;
   if (type === "video") return <div style={{ width: "100%", aspectRatio: ratio, background: "#111", overflow: "hidden" }}><video src={src} controls style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
   return <div style={{ width: "100%", aspectRatio: ratio, background: "#111", overflow: "hidden" }}><img src={src} alt={caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
 }
 
-// ─── CONTENT BLOCK ────────────────────────────────────────────────────────────
 function ContentBlock({ block, isMobile }) {
-  if (block.type === "text") return (
-    <p style={{ ...HN, fontSize: isMobile ? 17 : 20, lineHeight: 1.75, color: "rgba(255,255,255,.85)", marginBottom: 12, fontWeight: 400 }}>{block.content}</p>
-  );
-
+  if (block.type === "text") return <p style={{ ...HN, fontSize: isMobile ? 17 : 20, lineHeight: 1.75, color: "rgba(255,255,255,.85)", marginBottom: 12, fontWeight: 400 }}>{block.content}</p>;
   if (block.type === "quote") return (
     <blockquote style={{ margin: "0 0 56px", padding: "0 0 0 28px", borderLeft: "2px solid rgba(255,255,255,.2)" }}>
       <p style={{ ...HN, fontSize: isMobile ? 24 : 32, fontWeight: 700, lineHeight: 1.25, color: "#fff", letterSpacing: "-.03em" }}>{block.content}</p>
     </blockquote>
   );
-
   if (block.type === "image" || block.type === "video") {
-    const layout = block.layout || "wide";
-    const type = block.type;
-
-    // On mobile: always stack vertically as single wide blocks
+    const layout = block.layout || "wide"; const type = block.type;
     if (isMobile) {
-      const srcs = [block.src, block.src2, block.src3].filter(Boolean);
       const slots = layout === "wide" ? [block.src] : layout === "two-square" ? [block.src, block.src2] : [block.src, block.src2, block.src3];
       const mobileRatio = layout === "three-vertical" ? "9/16" : layout === "two-square" ? "1/1" : "16/9";
       return (
@@ -120,15 +129,12 @@ function ContentBlock({ block, isMobile }) {
         </div>
       );
     }
-
-    // Desktop layouts
     if (layout === "wide") return (
       <div style={{ marginBottom: 56 }}>
-        <MediaSlot src={block.src} type={type} caption={block.caption} ratio="16/9" />
+        <MediaSlot src={block.src} type={type} ratio="16/9" />
         {block.caption && <p style={{ ...HN, fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 10, letterSpacing: ".06em", textTransform: "uppercase" }}>{block.caption}</p>}
       </div>
     );
-
     if (layout === "two-square") return (
       <div style={{ marginBottom: 56 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "start" }}>
@@ -138,7 +144,6 @@ function ContentBlock({ block, isMobile }) {
         {block.caption && <p style={{ ...HN, fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 10, letterSpacing: ".06em", textTransform: "uppercase" }}>{block.caption}</p>}
       </div>
     );
-
     if (layout === "three-vertical") return (
       <div style={{ marginBottom: 56 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, alignItems: "start" }}>
@@ -153,7 +158,6 @@ function ContentBlock({ block, isMobile }) {
   return null;
 }
 
-// ─── PUBLIC SITE ──────────────────────────────────────────────────────────────
 function PublicSite({ projects, seo, onAdmin }) {
   const [filter, setFilter] = useState("all");
   const [hovered, setHovered] = useState(null);
@@ -169,25 +173,19 @@ function PublicSite({ projects, seo, onAdmin }) {
   const handleAdminClick = () => { setPwPrompt(true); setPwInput(""); setPwError(false); };
   const handleAdminSubmit = () => {
     if (pwInput === (seo.adminPassword || "1234")) { setPwPrompt(false); onAdmin(); }
-    else { setPwError(true); }
+    else setPwError(true);
   };
 
   const filtered = filter === "all" ? projects : projects.filter(p => p.category.includes(filter));
   const px = isMobile ? "20px" : "40px";
-
   const openProject = p => { setActive(p); setView("project"); window.scrollTo(0, 0); };
   const goIndex = () => { setView("index"); setActive(null); };
   const handleSend = () => {
-    if (form.name && form.email && form.message) {
-      setSent(true);
-      setTimeout(() => { setSent(false); setForm({ name: "", email: "", message: "" }); }, 3000);
-    }
+    if (form.name && form.email && form.message) { setSent(true); setTimeout(() => { setSent(false); setForm({ name: "", email: "", message: "" }); }, 3000); }
   };
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", ...HN }}>
-
-      {/* ── NAV ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(0,0,0,.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,.08)", padding: `0 ${px}`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span onClick={goIndex} style={{ fontSize: 14, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em", textTransform: "uppercase" }}>{seo.siteName}</span>
         <div style={{ display: "flex", gap: isMobile ? 20 : 32, alignItems: "center" }}>
@@ -198,7 +196,6 @@ function PublicSite({ projects, seo, onAdmin }) {
         </div>
       </nav>
 
-      {/* ── PASSWORD MODAL ── */}
       {pwPrompt && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setPwPrompt(false)}>
           <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.1)", padding: "40px 48px", minWidth: 320 }} onClick={e => e.stopPropagation()}>
@@ -215,29 +212,21 @@ function PublicSite({ projects, seo, onAdmin }) {
         </div>
       )}
 
-      {/* ── INDEX ── */}
       {view === "index" && (
         <div style={{ padding: `0 ${px} 120px` }}>
-          {/* Hero */}
           <div style={{ padding: isMobile ? "56px 0 48px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
             <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,64px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
-
-          {/* Filter */}
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 36 : 56 }}>
             {CATEGORIES.map(cat => (
               <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "6px 18px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".05em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
-
-          {/* Grid — masonry on desktop, single col on mobile */}
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", overflow: "hidden", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", aspectRatio: "4/3" }} />
-                  </div>
+                  <div style={{ width: "100%", overflow: "hidden", background: "#111" }}><ThumbMedia project={p} style={{ width: "100%", aspectRatio: "4/3" }} /></div>
                   <div style={{ padding: "12px 0 20px" }}>
                     <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle} · {p.year}</div>
@@ -270,15 +259,12 @@ function PublicSite({ projects, seo, onAdmin }) {
               })}
             </div>
           )}
-
           {filtered.length === 0 && <div style={{ textAlign: "center", padding: "100px 0", color: "rgba(255,255,255,.2)", fontSize: 13, letterSpacing: ".07em", textTransform: "uppercase" }}>No projects in this category</div>}
         </div>
       )}
 
-      {/* ── PROJECT ── */}
       {view === "project" && active && (
         <div>
-          {/* Cover */}
           <div style={{ width: "100%", height: isMobile ? "60vh" : "88vh", position: "relative", overflow: "hidden" }}>
             <CoverMedia project={active} style={{ width: "100%", height: "100%" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
@@ -290,25 +276,17 @@ function PublicSite({ projects, seo, onAdmin }) {
               <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase" }}>{active.subtitle} — {active.location}, {active.year}</div>
             </div>
           </div>
-
-          {/* Body */}
           <div style={{ padding: isMobile ? "52px 20px 100px" : `96px ${px} 140px` }}>
             <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, marginBottom: 56, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
-
             <p style={{ ...HN, fontSize: isMobile ? 20 : 26, fontWeight: 700, lineHeight: 1.35, color: "#fff", letterSpacing: "-.025em", marginBottom: isMobile ? 12 : 16 }}>{active.desc}</p>
-
             {(active.blocks || []).map(b => <ContentBlock key={b.id} block={b} isMobile={isMobile} />)}
-
             <div style={{ marginTop: 80, paddingTop: 48, borderTop: "1px solid rgba(255,255,255,.07)" }}>
-              <button onClick={() => setView("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 32px", background: "#fff", color: "#000", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", cursor: "pointer", ...HN }}>
-                Start a project →
-              </button>
+              <button onClick={() => setView("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 32px", background: "#fff", color: "#000", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Start a project →</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── CONTACT ── */}
       {view === "contact" && (
         <div style={{ maxWidth: 860, margin: "0 auto", padding: isMobile ? "64px 20px 100px" : "112px 40px 160px" }}>
           <h1 style={{ fontSize: isMobile ? "clamp(48px,11vw,72px)" : "clamp(64px,8vw,112px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", marginBottom: isMobile ? 56 : 80 }}>Let's work<br />together.</h1>
@@ -335,17 +313,16 @@ function PublicSite({ projects, seo, onAdmin }) {
             </div>
           )}
           <div style={{ marginTop: 80, display: "flex", gap: isMobile ? 36 : 56, flexWrap: "wrap" }}>
-            {[["Email", seo.email], ["Instagram", seo.instagram], ["Behance", seo.behance]].map(([k, v]) => (
+            {[["Email", seo.email], ["Behance", seo.behance]].map(([k, v]) => v ? (
               <div key={k}>
                 <div style={{ fontSize: 11, letterSpacing: ".08em", color: "rgba(255,255,255,.3)", textTransform: "uppercase", marginBottom: 8 }}>{k}</div>
                 <div style={{ fontSize: 15, color: "rgba(255,255,255,.75)", fontWeight: 500 }}>{v}</div>
               </div>
-            ))}
+            ) : null)}
           </div>
         </div>
       )}
 
-      {/* ── FOOTER ── */}
       <footer style={{ borderTop: "1px solid rgba(255,255,255,.07)", padding: `24px ${px}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <span style={{ fontSize: 12, color: "rgba(255,255,255,.25)", letterSpacing: ".04em" }}>© {new Date().getFullYear()} {seo.siteName}</span>
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
@@ -370,27 +347,17 @@ function PublicSite({ projects, seo, onAdmin }) {
   );
 }
 
-// ─── BLOCK EDITOR ─────────────────────────────────────────────────────────────
 function BlockEditor({ block, onChange, onDelete, onUp, onDown }) {
   const refs = [useRef(), useRef(), useRef()];
   const inputStyle = { width: "100%", background: "#111", border: "1px solid rgba(255,255,255,.12)", color: "#fff", padding: "8px 12px", fontSize: 13, ...HN, outline: "none", borderRadius: 2 };
   const labelStyle = { fontSize: 10, letterSpacing: ".08em", color: "rgba(255,255,255,.5)", textTransform: "uppercase", display: "block", marginBottom: 6 };
-
-  const handleFile = (key, i) => (e) => {
+  const handleFile = (key) => (e) => {
     const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => onChange({ ...block, [key]: ev.target.result });
-    r.readAsDataURL(f);
+    const r = new FileReader(); r.onload = ev => onChange({ ...block, [key]: ev.target.result }); r.readAsDataURL(f);
   };
-
   const slotCount = block.layout === "wide" ? 1 : block.layout === "two-square" ? 2 : 3;
   const slotKeys = ["src", "src2", "src3"];
-  const slotLabels = {
-    "wide": ["File (16:9)"],
-    "two-square": ["Left (1:1)", "Right (1:1)"],
-    "three-vertical": ["Left (9:16)", "Center (9:16)", "Right (9:16)"],
-  };
-
+  const slotLabels = { "wide": ["File (16:9)"], "two-square": ["Left (1:1)", "Right (1:1)"], "three-vertical": ["Left (9:16)", "Center (9:16)", "Right (9:16)"] };
   return (
     <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,.08)", borderRadius: 4, padding: 16, marginBottom: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
@@ -401,27 +368,13 @@ function BlockEditor({ block, onChange, onDelete, onUp, onDown }) {
           ))}
         </div>
       </div>
-
-      {block.type === "text" && (
-        <div>
-          <label style={labelStyle}>Text</label>
-          <textarea value={block.content || ""} onChange={e => onChange({ ...block, content: e.target.value })} rows={4} style={{ ...inputStyle, resize: "vertical" }} />
-        </div>
-      )}
-
-      {block.type === "quote" && (
-        <div>
-          <label style={labelStyle}>Quote</label>
-          <textarea value={block.content || ""} onChange={e => onChange({ ...block, content: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
-        </div>
-      )}
-
+      {block.type === "text" && <textarea value={block.content || ""} onChange={e => onChange({ ...block, content: e.target.value })} rows={4} style={{ ...inputStyle, resize: "vertical" }} />}
+      {block.type === "quote" && <textarea value={block.content || ""} onChange={e => onChange({ ...block, content: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} />}
       {(block.type === "image" || block.type === "video") && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* Layout picker */}
           <div>
             <label style={labelStyle}>Layout</label>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {LAYOUTS.map(l => (
                 <button key={l} onClick={() => onChange({ ...block, layout: l })}
                   style={{ padding: "5px 12px", background: block.layout === l ? "#fff" : "transparent", color: block.layout === l ? "#000" : "rgba(255,255,255,.4)", border: "1px solid rgba(255,255,255,.15)", fontSize: 10, cursor: "pointer", ...HN, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase", borderRadius: 2 }}>
@@ -430,28 +383,21 @@ function BlockEditor({ block, onChange, onDelete, onUp, onDown }) {
               ))}
             </div>
           </div>
-
-          {/* File slots */}
           <div style={{ display: "grid", gridTemplateColumns: slotCount === 1 ? "1fr" : slotCount === 2 ? "1fr 1fr" : "1fr 1fr 1fr", gap: 8 }}>
             {Array.from({ length: slotCount }).map((_, i) => {
               const key = slotKeys[i];
               return (
                 <div key={i}>
                   <label style={labelStyle}>{(slotLabels[block.layout] || [])[i] || `File ${i + 1}`}</label>
-                  <input ref={refs[i]} type="file" accept={block.type === "video" ? "video/*" : "image/*"} style={{ display: "none" }} onChange={handleFile(key, i)} />
-                  <button onClick={() => refs[i].current?.click()}
-                    style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid rgba(255,255,255,.15)", color: block[key] ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.3)", fontSize: 11, cursor: "pointer", ...HN, borderRadius: 2 }}>
+                  <input ref={refs[i]} type="file" accept={block.type === "video" ? "video/*" : "image/*"} style={{ display: "none" }} onChange={handleFile(key)} />
+                  <button onClick={() => refs[i].current?.click()} style={{ width: "100%", padding: "8px", background: "transparent", border: "1px solid rgba(255,255,255,.15)", color: block[key] ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.3)", fontSize: 11, cursor: "pointer", ...HN, borderRadius: 2 }}>
                     {block[key] ? "✓ Loaded" : "Upload"}
                   </button>
-                  {block[key] && (
-                    <button onClick={() => onChange({ ...block, [key]: "" })} style={{ background: "none", border: "none", color: "rgba(255,80,80,.6)", fontSize: 10, cursor: "pointer", ...HN, padding: "4px 0", display: "block" }}>Remove</button>
-                  )}
+                  {block[key] && <button onClick={() => onChange({ ...block, [key]: "" })} style={{ background: "none", border: "none", color: "rgba(255,80,80,.6)", fontSize: 10, cursor: "pointer", ...HN, padding: "4px 0", display: "block" }}>Remove</button>}
                 </div>
               );
             })}
           </div>
-
-          {/* Caption */}
           <div>
             <label style={labelStyle}>Caption (optional)</label>
             <input value={block.caption || ""} onChange={e => onChange({ ...block, caption: e.target.value })} style={inputStyle} />
@@ -462,14 +408,15 @@ function BlockEditor({ block, onChange, onDelete, onUp, onDown }) {
   );
 }
 
-// ─── ADMIN ────────────────────────────────────────────────────────────────────
-function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
+function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
   const [tab, setTab] = useState("projects");
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(null);
   const [seoForm, setSeoForm] = useState({ ...seo });
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const coverRef = useRef();
+  const thumbRef = useRef();
 
   const inputStyle = { width: "100%", background: "#111", border: "1px solid rgba(255,255,255,.12)", color: "#fff", padding: "9px 12px", fontSize: 13, ...HN, outline: "none", borderRadius: 2 };
   const labelStyle = { fontSize: 10, letterSpacing: ".08em", color: "rgba(255,255,255,.5)", textTransform: "uppercase", display: "block", marginBottom: 6 };
@@ -480,14 +427,21 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
     setForm({ id, title: "", subtitle: "", categoryStr: "", year: String(new Date().getFullYear()), location: "", coverType: "image", cover: "", desc: "", blocks: [], featured: false });
     setEditId(id);
   };
-  const saveProject = () => {
+  const saveProject = async () => {
     const updated = { ...form, category: form.categoryStr.split(",").map(s => s.trim()).filter(Boolean) };
-    if (projects.find(p => p.id === form.id)) setProjects(projects.map(p => p.id === form.id ? updated : p));
-    else setProjects([...projects, updated]);
+    const newProjects = projects.find(p => p.id === form.id) ? projects.map(p => p.id === form.id ? updated : p) : [...projects, updated];
+    setProjects(newProjects);
+    setSaving(true);
+    await db.saveProjects(newProjects);
+    setSaving(false);
     setEditId(null); setForm(null);
   };
-  const del = id => { if (window.confirm("Delete this project?")) setProjects(projects.filter(p => p.id !== id)); };
-
+  const del = async id => {
+    if (!window.confirm("Delete this project?")) return;
+    const newProjects = projects.filter(p => p.id !== id);
+    setProjects(newProjects);
+    await db.saveProjects(newProjects);
+  };
   const addBlock = type => setForm({ ...form, blocks: [...(form.blocks || []), { id: String(Date.now()), type, layout: "wide", content: "", src: "", src2: "", src3: "", caption: "" }] });
   const updateBlock = (id, updated) => setForm({ ...form, blocks: form.blocks.map(b => b.id === id ? updated : b) });
   const deleteBlock = id => setForm({ ...form, blocks: form.blocks.filter(b => b.id !== id) });
@@ -496,22 +450,17 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
     const ni = i + dir; if (ni < 0 || ni >= arr.length) return;
     [arr[i], arr[ni]] = [arr[ni], arr[i]]; setForm({ ...form, blocks: arr });
   };
-
-  const thumbRef = useRef();
-  const handleCover = e => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = ev => setForm({ ...form, cover: ev.target.result }); r.readAsDataURL(f);
+  const handleCover = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setForm({ ...form, cover: ev.target.result }); r.readAsDataURL(f); };
+  const handleThumb = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setForm({ ...form, thumbnail: ev.target.result }); r.readAsDataURL(f); };
+  const saveSeo = async () => {
+    setSaving(true);
+    setSeo(seoForm);
+    await db.saveSettings(seoForm);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
-  const handleThumb = e => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = ev => setForm({ ...form, thumbnail: ev.target.result }); r.readAsDataURL(f);
-  };
-
-  const saveSeo = () => { setSeo(seoForm); setSaved(true); setTimeout(() => setSaved(false), 2000); };
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", ...HN }}>
-      {/* Admin nav */}
       <div style={{ background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,.08)", padding: "0 32px", height: 48, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,255,255,.3)" }}>Admin</span>
@@ -521,12 +470,13 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
               style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: tab === k ? "#fff" : "rgba(255,255,255,.3)", ...HN, padding: "4px 0", borderBottom: tab === k ? "1px solid #fff" : "1px solid transparent" }}>{l}</button>
           ))}
         </div>
-        <button onClick={onBack} style={{ background: "none", border: "1px solid rgba(255,255,255,.15)", color: "rgba(255,255,255,.5)", fontSize: 10, padding: "5px 14px", cursor: "pointer", ...HN, letterSpacing: ".06em", textTransform: "uppercase", borderRadius: 2 }}>← Site</button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {saving && <span style={{ fontSize: 10, color: "rgba(255,255,255,.3)", letterSpacing: ".06em" }}>Saving...</span>}
+          <button onClick={onBack} style={{ background: "none", border: "1px solid rgba(255,255,255,.15)", color: "rgba(255,255,255,.5)", fontSize: 10, padding: "5px 14px", cursor: "pointer", ...HN, letterSpacing: ".06em", textTransform: "uppercase", borderRadius: 2 }}>← Site</button>
+        </div>
       </div>
 
       <div style={{ padding: "32px 40px" }}>
-
-        {/* PROJECTS LIST */}
         {tab === "projects" && !editId && (
           <div style={{ maxWidth: 780 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 24 }}>
@@ -545,7 +495,7 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
                     {p.featured && <span style={{ fontSize: 9, letterSpacing: ".07em", textTransform: "uppercase", color: "rgba(255,255,255,.3)", border: "1px solid rgba(255,255,255,.1)", padding: "3px 7px" }}>Featured</span>}
-                    <button onClick={() => startEdit(p)} style={{ padding: "6px 14px", border: "1px solid rgba(255,255,255,.15)", background: "transparent", color: "rgba(255,255,255,.6)", fontSize: 10, cursor: "pointer", ...HN, letterSpacing: ".04em" }}>Edit</button>
+                    <button onClick={() => startEdit(p)} style={{ padding: "6px 14px", border: "1px solid rgba(255,255,255,.15)", background: "transparent", color: "rgba(255,255,255,.6)", fontSize: 10, cursor: "pointer", ...HN }}>Edit</button>
                     <button onClick={() => del(p.id)} style={{ padding: "6px 12px", border: "1px solid rgba(255,50,50,.2)", background: "transparent", color: "rgba(255,80,80,.5)", fontSize: 10, cursor: "pointer", ...HN }}>✕</button>
                   </div>
                 </div>
@@ -554,18 +504,14 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
           </div>
         )}
 
-        {/* EDIT */}
         {tab === "projects" && editId && form && (
           <div style={{ maxWidth: 720 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 32 }}>
               <button onClick={() => { setEditId(null); setForm(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 10, padding: 0, ...HN, letterSpacing: ".07em", textTransform: "uppercase" }}>← Back</button>
               <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em" }}>{projects.find(p => p.id === form.id) ? "Edit project" : "New project"}</h2>
             </div>
-
-            {/* Thumbnail — index */}
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Thumbnail — index grid</label>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", marginBottom: 8 }}>Тизер на главной. Любые пропорции.</div>
               <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                 {["image", "video"].map(t => (
                   <button key={t} onClick={() => setForm({ ...form, thumbType: t })}
@@ -574,21 +520,16 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
               </div>
               <input ref={thumbRef} type="file" accept={(form.thumbType || "image") === "video" ? "video/*" : "image/*"} style={{ display: "none" }} onChange={handleThumb} />
               <div style={{ width: "100%", height: 160, background: "#0a0a0a", border: "1px dashed rgba(255,255,255,.1)", cursor: "pointer", overflow: "hidden" }} onClick={() => thumbRef.current?.click()}>
-                {form.thumbnail
-                  ? <CoverMedia project={{ ...form, cover: form.thumbnail, coverType: form.thumbType || "image" }} style={{ width: "100%", height: "100%" }} />
+                {form.thumbnail ? <CoverMedia project={{ ...form, cover: form.thumbnail, coverType: form.thumbType || "image" }} style={{ width: "100%", height: "100%" }} />
                   : <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
                       <div style={{ fontSize: 22, color: "rgba(255,255,255,.15)" }}>+</div>
                       <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", letterSpacing: ".07em", textTransform: "uppercase" }}>Upload thumbnail</div>
-                    </div>
-                }
+                    </div>}
               </div>
               {form.thumbnail && <button onClick={() => setForm({ ...form, thumbnail: "" })} style={{ background: "none", border: "none", color: "rgba(255,80,80,.5)", fontSize: 10, cursor: "pointer", ...HN, marginTop: 6 }}>Remove</button>}
             </div>
-
-            {/* Cover — project page */}
             <div style={{ marginBottom: 24 }}>
               <label style={labelStyle}>Cover — project page</label>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", marginBottom: 8 }}>Полноэкранный кавер на странице проекта.</div>
               <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                 {["image", "video"].map(t => (
                   <button key={t} onClick={() => setForm({ ...form, coverType: t })}
@@ -597,48 +538,32 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
               </div>
               <input ref={coverRef} type="file" accept={form.coverType === "video" ? "video/*" : "image/*"} style={{ display: "none" }} onChange={handleCover} />
               <div style={{ width: "100%", height: 200, background: "#0a0a0a", border: "1px dashed rgba(255,255,255,.1)", cursor: "pointer", overflow: "hidden" }} onClick={() => coverRef.current?.click()}>
-                {form.cover
-                  ? <CoverMedia project={form} style={{ width: "100%", height: "100%" }} />
+                {form.cover ? <CoverMedia project={form} style={{ width: "100%", height: "100%" }} />
                   : <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
                       <div style={{ fontSize: 22, color: "rgba(255,255,255,.15)" }}>+</div>
                       <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", letterSpacing: ".07em", textTransform: "uppercase" }}>Upload cover</div>
-                    </div>
-                }
+                    </div>}
               </div>
               {form.cover && <button onClick={() => setForm({ ...form, cover: "" })} style={{ background: "none", border: "none", color: "rgba(255,80,80,.5)", fontSize: 10, cursor: "pointer", ...HN, marginTop: 6 }}>Remove</button>}
             </div>
-
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
               {[{ k: "title", l: "Title" }, { k: "subtitle", l: "Subtitle" }, { k: "year", l: "Year" }, { k: "location", l: "Location" }].map(({ k, l }) => (
-                <div key={k}>
-                  <label style={labelStyle}>{l}</label>
-                  <input value={form[k] || ""} onChange={e => setForm({ ...form, [k]: e.target.value })} style={inputStyle} />
-                </div>
+                <div key={k}><label style={labelStyle}>{l}</label><input value={form[k] || ""} onChange={e => setForm({ ...form, [k]: e.target.value })} style={inputStyle} /></div>
               ))}
             </div>
-
             <div style={{ marginBottom: 14 }}>
               <label style={labelStyle}>Categories (comma-separated)</label>
               <input value={form.categoryStr || ""} onChange={e => setForm({ ...form, categoryStr: e.target.value })} placeholder="brand, logo, print..." style={inputStyle} />
               <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", marginTop: 4 }}>Options: {CATEGORIES.slice(1).join(", ")}</div>
             </div>
-
             <div style={{ marginBottom: 28 }}>
               <label style={labelStyle}>Description</label>
               <textarea value={form.desc || ""} onChange={e => setForm({ ...form, desc: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
             </div>
-
-            {/* Blocks */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <label style={{ ...labelStyle, marginBottom: 0 }}>Content blocks ({form.blocks?.length || 0})</label>
-              </div>
+              <label style={{ ...labelStyle, marginBottom: 12 }}>Content blocks ({form.blocks?.length || 0})</label>
               {(form.blocks || []).map(b => (
-                <BlockEditor key={b.id} block={b}
-                  onChange={updated => updateBlock(b.id, updated)}
-                  onDelete={() => deleteBlock(b.id)}
-                  onUp={() => moveBlock(b.id, -1)}
-                  onDown={() => moveBlock(b.id, 1)} />
+                <BlockEditor key={b.id} block={b} onChange={updated => updateBlock(b.id, updated)} onDelete={() => deleteBlock(b.id)} onUp={() => moveBlock(b.id, -1)} onDown={() => moveBlock(b.id, 1)} />
               ))}
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
                 {BLOCK_TYPES.map(t => (
@@ -646,20 +571,19 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
                 ))}
               </div>
             </div>
-
             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: 28 }}>
               <input type="checkbox" checked={form.featured || false} onChange={e => setForm({ ...form, featured: e.target.checked })} />
               <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)", letterSpacing: ".04em" }}>Featured</span>
             </label>
-
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={saveProject} style={{ padding: "11px 28px", background: "#fff", color: "#000", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Save project</button>
+              <button onClick={saveProject} style={{ padding: "11px 28px", background: "#fff", color: "#000", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>
+                {saving ? "Saving..." : "Save project"}
+              </button>
               <button onClick={() => { setEditId(null); setForm(null); }} style={{ padding: "11px 20px", background: "transparent", color: "rgba(255,255,255,.4)", border: "1px solid rgba(255,255,255,.1)", fontSize: 10, cursor: "pointer", ...HN, borderRadius: 2 }}>Cancel</button>
             </div>
           </div>
         )}
 
-        {/* SEO */}
         {tab === "seo" && (
           <div style={{ maxWidth: 600 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
@@ -689,12 +613,13 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
                 </label>
                 <textarea value={seoForm.metaDesc || ""} onChange={e => setSeoForm({ ...seoForm, metaDesc: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
-              <button onClick={saveSeo} style={{ alignSelf: "flex-start", padding: "11px 28px", background: "#fff", color: "#000", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Save</button>
+              <button onClick={saveSeo} style={{ alignSelf: "flex-start", padding: "11px 28px", background: "#fff", color: "#000", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>
+                {saving ? "Saving..." : "Save"}
+              </button>
             </div>
           </div>
         )}
 
-        {/* CONTACTS */}
         {tab === "contacts" && (
           <div style={{ maxWidth: 560 }}>
             <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-.03em", marginBottom: 8 }}>Inbox</h2>
@@ -725,11 +650,29 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack }) {
   );
 }
 
-// ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
-  const [seo, setSeo] = useState(INITIAL_SEO);
+  const [projects, setProjects] = useState(DEFAULT_PROJECTS);
+  const [seo, setSeo] = useState(DEFAULT_SEO);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [dbProjects, dbSeo] = await Promise.all([db.getProjects(), db.getSettings()]);
+        if (dbProjects.length > 0) setProjects(dbProjects);
+        if (dbSeo) setSeo({ ...DEFAULT_SEO, ...dbSeo });
+      } catch (e) { console.error("DB load error:", e); }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,.2)", letterSpacing: ".1em", textTransform: "uppercase", ...HN }}>Loading...</div>
+    </div>
+  );
 
   if (isAdmin) return <AdminPanel projects={projects} setProjects={setProjects} seo={seo} setSeo={setSeo} onBack={() => setIsAdmin(false)} />;
   return <PublicSite projects={projects} seo={seo} onAdmin={() => setIsAdmin(true)} />;
