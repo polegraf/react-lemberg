@@ -228,10 +228,10 @@ function PublicSite({ projects, seo, onAdmin }) {
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", ...HN }}>
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(0,0,0,.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,.08)", padding: `0 ${px}`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span onClick={goIndex} style={{ fontSize: 14, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em", textTransform: "uppercase" }}>{seo.siteName}</span>
-        <div style={{ display: "flex", gap: isMobile ? 20 : 32, alignItems: "center" }}>
+        <span onClick={goIndex} style={{ fontSize: isMobile ? 16 : 14, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em", textTransform: "uppercase" }}>{seo.siteName}</span>
+        <div style={{ display: "flex", gap: isMobile ? 24 : 32, alignItems: "center" }}>
           {[["index", "Work"], ["contact", "Contact"]].map(([v, l]) => (
-            <span key={v} onClick={() => setView(v)} style={{ fontSize: 13, cursor: "pointer", color: view === v ? "#fff" : "rgba(255,255,255,.4)", fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", transition: "color .15s" }}>{l}</span>
+            <span key={v} onClick={() => setView(v)} style={{ fontSize: isMobile ? 16 : 13, cursor: "pointer", color: view === v ? "#fff" : "rgba(255,255,255,.4)", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", transition: "color .15s" }}>{l}</span>
           ))}
           <span onClick={handleAdminClick} style={{ fontSize: 32, color: "#fff", cursor: "pointer", fontWeight: 400, lineHeight: 1, userSelect: "none" }}>✳</span>
         </div>
@@ -258,21 +258,21 @@ function PublicSite({ projects, seo, onAdmin }) {
           <div style={{ padding: isMobile ? "56px 0 48px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
             <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,64px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
-          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 36 : 56 }}>
+          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: 32 }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
-              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "8px 20px 8px 0" : "6px 18px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.3)", fontSize: isMobile ? 15 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".05em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
+              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 16 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
           {isMobile ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
+                  <div style={{ width: "100%", aspectRatio: "3/2", overflow: "hidden", background: "#111" }}>
+                    <ThumbMedia project={p} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
-                  <div style={{ padding: "12px 0 4px" }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                  <div style={{ padding: "14px 0 6px" }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
+                    <div style={{ fontSize: 14, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 5 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
