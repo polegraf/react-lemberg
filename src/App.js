@@ -225,17 +225,38 @@ function PublicSite({ projects, seo, onAdmin }) {
     if (form.name && form.email && form.message) { setSent(true); setTimeout(() => { setSent(false); setForm({ name: "", email: "", message: "" }); }, 3000); }
   };
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", ...HN }}>
+      {/* ── NAV ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(0,0,0,.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,.08)", padding: `0 ${px}`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span onClick={goIndex} style={{ fontSize: isMobile ? 16 : 14, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em", textTransform: "uppercase" }}>{seo.siteName}</span>
-        <div style={{ display: "flex", gap: isMobile ? 24 : 32, alignItems: "center" }}>
-          {[["index", "Work"], ["contact", "Contact"]].map(([v, l]) => (
-            <span key={v} onClick={() => setView(v)} style={{ fontSize: isMobile ? 16 : 13, cursor: "pointer", color: view === v ? "#fff" : "rgba(255,255,255,.4)", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", transition: "color .15s" }}>{l}</span>
-          ))}
-          <span onClick={handleAdminClick} style={{ fontSize: 32, color: "#fff", cursor: "pointer", fontWeight: 400, lineHeight: 1, userSelect: "none" }}>✳</span>
-        </div>
+        <span onClick={() => { goIndex(); setMenuOpen(false); }} style={{ fontSize: isMobile ? 14 : 14, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em", textTransform: "uppercase" }}>{seo.siteName}</span>
+        {isMobile ? (
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+            <span style={{ display: "block", width: 22, height: 1.5, background: menuOpen ? "transparent" : "#fff", transition: "all .2s", transform: menuOpen ? "rotate(45deg) translate(4px, 4px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 1.5, background: "#fff", transition: "all .2s", transform: menuOpen ? "rotate(-45deg)" : "none" }} />
+            {!menuOpen && <span style={{ display: "block", width: 22, height: 1.5, background: "#fff" }} />}
+          </button>
+        ) : (
+          <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+            {[["index", "Work"], ["contact", "Contact"]].map(([v, l]) => (
+              <span key={v} onClick={() => setView(v)} style={{ fontSize: 13, cursor: "pointer", color: view === v ? "#fff" : "rgba(255,255,255,.4)", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", transition: "color .15s" }}>{l}</span>
+            ))}
+            <span onClick={handleAdminClick} style={{ fontSize: 32, color: "#fff", cursor: "pointer", fontWeight: 400, lineHeight: 1, userSelect: "none" }}>✳</span>
+          </div>
+        )}
       </nav>
+
+      {/* ── BURGER MENU ── */}
+      {isMobile && menuOpen && (
+        <div style={{ position: "fixed", inset: 0, top: 56, background: "#000", zIndex: 99, display: "flex", flexDirection: "column", padding: "48px 20px" }}>
+          {[["index", "Work"], ["contact", "Contact"]].map(([v, l]) => (
+            <span key={v} onClick={() => { setView(v); setMenuOpen(false); }}
+              style={{ fontSize: 48, fontWeight: 700, letterSpacing: "-.03em", lineHeight: 1.1, color: view === v ? "#fff" : "rgba(255,255,255,.35)", cursor: "pointer", marginBottom: 16 }}>{l}</span>
+          ))}
+        </div>
+      )}
 
       {pwPrompt && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.88)", zIndex: 999, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setPwPrompt(false)}>
@@ -258,9 +279,9 @@ function PublicSite({ projects, seo, onAdmin }) {
           <div style={{ padding: isMobile ? "48px 0 40px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
             <h1 style={{ fontSize: isMobile ? "clamp(36px,9vw,52px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
-          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56 }}>
+          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56, lineHeight: isMobile ? 1.2 : "normal" }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
-              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "10px 20px 10px 0" : "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 20 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
+              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "4px 12px 4px 0" : "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 13 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", lineHeight: 1.2, textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
           {isMobile ? (
@@ -268,9 +289,9 @@ function PublicSite({ projects, seo, onAdmin }) {
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
                   <ThumbMedia project={p} />
-                  <div style={{ padding: "14px 0 6px" }}>
-                    <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
-                    <div style={{ fontSize: 17, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 6 }}>{p.subtitle}</div>
+                  <div style={{ padding: "12px 0 4px" }}>
+                    <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1.3 }}>{p.title}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".03em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
