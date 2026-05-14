@@ -260,19 +260,19 @@ function PublicSite({ projects, seo, onAdmin }) {
           </div>
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 36 : 56 }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
-              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "6px 18px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".05em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
+              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "8px 20px 8px 0" : "6px 18px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.3)", fontSize: isMobile ? 15 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".05em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", aspectRatio: "4/3", overflow: "hidden", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", height: "100%" }} />
+                  <div style={{ width: "100%", background: "#111" }}>
+                    <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
                   </div>
                   <div style={{ padding: "12px 0 4px" }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                    <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
