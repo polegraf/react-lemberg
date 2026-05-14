@@ -276,7 +276,7 @@ function PublicSite({ projects, seo, onAdmin }) {
 
       {view === "index" && (
         <div style={{ padding: `0 ${px} 120px` }}>
-          <div style={{ padding: isMobile ? "48px 0 40px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+          <div style={{ padding: isMobile ? "48px 0 40px" : "48px 0 36px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
             <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56, lineHeight: isMobile ? 1.2 : "normal" }}>
@@ -324,7 +324,7 @@ function PublicSite({ projects, seo, onAdmin }) {
       {view === "project" && active && (
         <div>
           {active.cover ? (
-            <div style={{ width: "100%", height: isMobile ? "60vh" : "88vh", position: "relative", overflow: "hidden" }}>
+            <div style={{ width: "100%", height: isMobile ? "30vh" : "44vh", position: "relative", overflow: "hidden" }}>
               <CoverMedia project={active} style={{ width: "100%", height: "100%" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "28px 20px" : "48px 40px" }}>
@@ -340,7 +340,7 @@ function PublicSite({ projects, seo, onAdmin }) {
               </div>
             </div>
           ) : (
-            <div style={{ width: "100%", padding: isMobile ? `${56 * 1.2}px 20px 48px` : "96px 40px 72px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+            <div style={{ width: "100%", padding: isMobile ? `${56 * 0.6}px 20px 24px` : "48px 40px 36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
               <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14, width: "100%" }}>{active.title}</h1>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0, width: "100%" }}>{active.subtitle} {active.location} {active.year}</div>
               {isMobile && (
