@@ -267,12 +267,10 @@ function PublicSite({ projects, seo, onAdmin }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", height: "auto", display: "block" }} />
-                  </div>
+                  <ThumbMedia project={p} />
                   <div style={{ padding: "14px 0 6px" }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
-                    <div style={{ fontSize: 14, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 5 }}>{p.subtitle}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
+                    <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 6 }}>{p.subtitle}</div>
                   </div>
                 </div>
               ))}
