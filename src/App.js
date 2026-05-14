@@ -340,14 +340,16 @@ function PublicSite({ projects, seo, onAdmin }) {
               </div>
             </div>
           ) : (
-            <div style={{ width: "100%", padding: isMobile ? `${56 * 0.6}px 20px 24px` : "48px 40px 36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderBottom: "1px solid rgba(255,255,255,.07)", textAlign: "center" }}>
-              <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14, width: "100%", maxWidth: "100%" }}>{active.title}</h1>
+            <div style={{ width: "100%", padding: isMobile ? `${56 * 0.6}px 20px 24px` : "48px 40px 36px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderBottom: "1px solid rgba(255,255,255,.07)", textAlign: "center" }}>
+              <div style={{ width: "80%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14, width: "100%" }}>{active.title}</h1>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center", marginBottom: isMobile ? "calc(13px * 1.2)" : 0, width: "100%" }}>{active.subtitle} {active.location} {active.year}</div>
               {isMobile && (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", marginTop: "calc(13px * 1.2)", width: "100%" }}>
                   {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
                 </div>
               )}
+              </div>
             </div>
           )}
           <div style={{ padding: isMobile ? "32px 20px 100px" : `96px ${px} 140px` }}>
