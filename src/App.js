@@ -127,9 +127,9 @@ function CoverMedia({ project, style }) {
 function ThumbMedia({ project, style }) {
   const src = project.thumbnail || project.cover;
   const type = project.thumbnail ? (project.thumbType || "image") : project.coverType;
-  if (!src) return <div style={style}><Placeholder title={project.title} type={type} /></div>;
-  if (type === "video") return <div style={{ ...style, overflow: "hidden" }}><video src={src} autoPlay muted loop playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
-  return <div style={{ ...style, overflow: "hidden" }}><img src={src} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>;
+  if (!src) return <div style={{ width: "100%", height: 240, background: "#111" }}><Placeholder title={project.title} type={type} /></div>;
+  if (type === "video") return <video src={src} autoPlay muted loop playsInline style={{ width: "100%", display: "block" }} />;
+  return <img src={src} alt={project.title} style={{ width: "100%", display: "block" }} />;
 }
 
 function MediaSlot({ src, type, caption, ratio }) {
@@ -255,20 +255,20 @@ function PublicSite({ projects, seo, onAdmin }) {
 
       {view === "index" && (
         <div style={{ padding: `0 ${px} 120px` }}>
-          <div style={{ padding: isMobile ? "56px 0 48px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-            <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,64px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
+          <div style={{ padding: isMobile ? "48px 0 40px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+            <h1 style={{ fontSize: isMobile ? "clamp(36px,9vw,52px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
-          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: 32 }}>
+          <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "20px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56 }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
-              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 16 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
+              <button key={cat} onClick={() => setFilter(cat)} style={{ padding: isMobile ? "8px 18px 8px 0" : "6px 16px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.35)", fontSize: isMobile ? 17 : 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".04em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
               {filtered.map(p => (
                 <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
-                  <div style={{ width: "100%", aspectRatio: "3/2", overflow: "hidden", background: "#111" }}>
-                    <ThumbMedia project={p} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ width: "100%", background: "#111" }}>
+                    <ThumbMedia project={p} style={{ width: "100%", height: "auto", display: "block" }} />
                   </div>
                   <div style={{ padding: "14px 0 6px" }}>
                     <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em", lineHeight: 1.2 }}>{p.title}</div>
