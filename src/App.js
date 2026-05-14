@@ -66,9 +66,9 @@ const LAYOUTS = ["wide", "two-square", "three-vertical"];
 const LAYOUT_LABELS = { "wide": "1 wide (16:9)", "two-square": "2 square (1:1)", "three-vertical": "3 vertical (9:16)" };
 
 function useIsMobile() {
-  const [mobile, setMobile] = useState(window.innerWidth < 768);
+  const [mobile, setMobile] = useState(window.innerWidth < 1024);
   useEffect(() => {
-    const fn = () => setMobile(window.innerWidth < 768);
+    const fn = () => setMobile(window.innerWidth < 1024);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
