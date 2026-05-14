@@ -277,7 +277,7 @@ function PublicSite({ projects, seo, onAdmin }) {
       {view === "index" && (
         <div style={{ padding: `0 ${px} 120px` }}>
           <div style={{ padding: isMobile ? "48px 0 40px" : "96px 0 72px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-            <h1 style={{ fontSize: isMobile ? "clamp(36px,9vw,52px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
+            <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 32 : 56, lineHeight: isMobile ? 1.2 : "normal" }}>
             {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
@@ -323,21 +323,28 @@ function PublicSite({ projects, seo, onAdmin }) {
 
       {view === "project" && active && (
         <div>
-          <div style={{ width: "100%", height: isMobile ? "60vh" : "88vh", position: "relative", overflow: "hidden" }}>
-            <CoverMedia project={active} style={{ width: "100%", height: "100%" }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "28px 20px" : "48px 40px" }}>
-              <div style={{ maxWidth: "80%", margin: "0 auto" }}>
-              <h1 style={{ fontSize: isMobile ? "clamp(32px,9vw,52px)" : "clamp(48px,6vw,88px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .93, color: "#fff", marginBottom: 14, textAlign: "center" }}>{active.title}</h1>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center" }}>{active.subtitle} — {active.location}, {active.year}</div>
+          {active.cover ? (
+            <div style={{ width: "100%", height: isMobile ? "60vh" : "88vh", position: "relative", overflow: "hidden" }}>
+              <CoverMedia project={active} style={{ width: "100%", height: "100%" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.88) 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "28px 20px" : "48px 40px" }}>
+                <div style={{ maxWidth: "80%", margin: "0 auto" }}>
+                  <h1 style={{ fontSize: isMobile ? "clamp(32px,9vw,52px)" : "clamp(48px,6vw,88px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .93, color: "#fff", marginBottom: 14, textAlign: "center" }}>{active.title}</h1>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center" }}>{active.subtitle} — {active.location}, {active.year}</div>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ width: "100%", padding: isMobile ? `${56 * 1.2}px 20px 48px` : "96px 40px 72px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+              <h1 style={{ fontSize: isMobile ? "clamp(43px,11vw,62px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff", textAlign: "center", marginBottom: 14 }}>{active.title}</h1>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".05em", textTransform: "uppercase", textAlign: "center" }}>{active.subtitle} — {active.location}, {active.year}</div>
+            </div>
+          )}
           <div style={{ padding: isMobile ? "52px 20px 100px" : `96px ${px} 140px` }}>
             <div style={{ maxWidth: "80%", margin: "0 auto" }}>
             {isMobile ? (
               <>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24, justifyContent: "center" }}>
                   {active.category.map(c => <span key={c} style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)", padding: "4px 12px" }}>{c}</span>)}
                 </div>
                 <button onClick={goIndex} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,.4)", fontSize: 12, padding: 0, marginBottom: 56, display: "flex", alignItems: "center", gap: 8, letterSpacing: ".06em", textTransform: "uppercase", ...HN }}>← Back to Work</button>
@@ -352,7 +359,7 @@ function PublicSite({ projects, seo, onAdmin }) {
             )}
             <p style={{ ...HN, fontSize: isMobile ? 17 : 20, fontWeight: 700, lineHeight: 1.75, color: "#fff", letterSpacing: "-.01em", marginBottom: isMobile ? 12 : 16, textAlign: "center" }}>{active.desc}</p>
             {(active.blocks || []).map(b => <ContentBlock key={b.id} block={b} isMobile={isMobile} />)}
-            <div style={{ marginTop: 80, paddingTop: 48, borderTop: "1px solid rgba(255,255,255,.07)" }}>
+            <div style={{ marginTop: 80, paddingTop: 48, borderTop: "1px solid rgba(255,255,255,.07)", display: "flex", justifyContent: isMobile ? "center" : "flex-start" }}>
               <button onClick={() => setView("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 32px", background: "#fff", color: "#000", border: "none", fontSize: 13, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", cursor: "pointer", ...HN }}>Start a project →</button>
             </div>
             </div>
