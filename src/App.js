@@ -218,7 +218,7 @@ function PublicSite({ projects, seo, onAdmin }) {
             <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,64px)" : "clamp(64px,8vw,120px)", fontWeight: 700, letterSpacing: "-.04em", lineHeight: .92, color: "#fff" }}>{seo.tagline}</h1>
           </div>
           <div style={{ display: "flex", gap: 0, flexWrap: "wrap", padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: isMobile ? 36 : 56 }}>
-            {CATEGORIES.map(cat => (
+            {["all", ...Array.from(new Set(projects.flatMap(p => p.category || [])))].map(cat => (
               <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "6px 18px 6px 0", background: "transparent", border: "none", color: filter === cat ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, cursor: "pointer", fontWeight: filter === cat ? 700 : 400, letterSpacing: ".05em", textTransform: "uppercase", ...HN, transition: "color .15s" }}>{cat}</button>
             ))}
           </div>
