@@ -568,11 +568,10 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
     const i = arr.findIndex(p => p.id === id);
     const ni = i + dir;
     if (ni < 0 || ni >= arr.length) return;
+    if (!window.confirm("Save new order?")) return;
     [arr[i], arr[ni]] = [arr[ni], arr[i]];
     setProjects(arr);
-    if (window.confirm("Save new order?")) {
-      await db.saveProjects(arr);
-    }
+    await db.saveProjects(arr);
   };
   const saveSeo = async () => {
     setSaving(true);
