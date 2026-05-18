@@ -300,7 +300,7 @@ function PublicSite({ projects, seo, onAdmin }) {
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
               {filtered.map(p => (
-                <div key={p.id} onClick={() => openProject(p)} style={{ cursor: "pointer" }}>
+                <div key={p.id} onClick={() => p.ready && openProject(p)} style={{ cursor: p.ready ? "pointer" : "default", opacity: p.ready ? 1 : 0.6 }}>
                   <ThumbMedia project={p} />
                   <div style={{ padding: "12px 0 4px" }}>
                     <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1.3 }}>{p.title}</div>
@@ -314,8 +314,8 @@ function PublicSite({ projects, seo, onAdmin }) {
               {filtered.map((p, i) => {
                 const tall = i % 5 === 0 || i % 5 === 3;
                 return (
-                  <div key={p.id} onClick={() => openProject(p)} onMouseEnter={() => setHovered(p.id)} onMouseLeave={() => setHovered(null)}
-                    style={{ breakInside: "avoid", marginBottom: 20, cursor: "pointer", position: "relative" }}>
+                  <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
+                    style={{ breakInside: "avoid", marginBottom: 20, cursor: p.ready ? "pointer" : "default", position: "relative", opacity: p.ready ? 1 : 0.6 }}>
                     <div style={{ overflow: "hidden", background: "#111", position: "relative", aspectRatio: p.thumbnail || p.cover ? undefined : (tall ? "3/4" : "4/3") }}>
                       <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
                         <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
@@ -523,7 +523,7 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
   const startEdit = p => { setForm({ ...p, categoryStr: p.category.join(", ") }); setEditId(p.id); };
   const startNew = () => {
     const id = Date.now();
-    setForm({ id, title: "", subtitle: "", categoryStr: "", year: String(new Date().getFullYear()), location: "", coverType: "image", cover: "", desc: "", blocks: [], featured: false });
+    setForm({ id, title: "", subtitle: "", categoryStr: "", year: String(new Date().getFullYear()), location: "", coverType: "image", cover: "", desc: "", blocks: [], featured: false, ready: false });
     setEditId(id);
   };
   const saveProject = async () => {
@@ -563,7 +563,15 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
     catch { alert("Upload failed, try again"); }
     setSaving(false);
   };
-  const saveSeo = async () => {
+  const moveProject = async (id, dir) => {
+    const arr = [...projects];
+    const i = arr.findIndex(p => p.id === id);
+    const ni = i + dir;
+    if (ni < 0 || ni >= arr.length) return;
+    [arr[i], arr[ni]] = [arr[ni], arr[i]];
+    setProjects(arr);
+    await db.saveProjects(arr);
+  };
     setSaving(true);
     setSeo(seoForm);
     await db.saveSettings(seoForm);
@@ -606,6 +614,9 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
                     {p.featured && <span style={{ fontSize: 9, letterSpacing: ".07em", textTransform: "uppercase", color: "rgba(255,255,255,.3)", border: "1px solid rgba(255,255,255,.1)", padding: "3px 7px" }}>Featured</span>}
+                    {p.ready && <span style={{ fontSize: 9, letterSpacing: ".07em", textTransform: "uppercase", color: "#4caf86", border: "1px solid #4caf86", padding: "3px 7px" }}>Ready</span>}
+                    <button onClick={() => moveProject(p.id, -1)} style={{ padding: "6px 10px", border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.4)", fontSize: 12, cursor: "pointer", ...HN }}>↑</button>
+                    <button onClick={() => moveProject(p.id, 1)} style={{ padding: "6px 10px", border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.4)", fontSize: 12, cursor: "pointer", ...HN }}>↓</button>
                     <button onClick={() => startEdit(p)} style={{ padding: "6px 14px", border: "1px solid rgba(255,255,255,.15)", background: "transparent", color: "rgba(255,255,255,.6)", fontSize: 10, cursor: "pointer", ...HN }}>Edit</button>
                     <button onClick={() => del(p.id)} style={{ padding: "6px 12px", border: "1px solid rgba(255,50,50,.2)", background: "transparent", color: "rgba(255,80,80,.5)", fontSize: 10, cursor: "pointer", ...HN }}>✕</button>
                   </div>
@@ -682,10 +693,16 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
                 ))}
               </div>
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: 28 }}>
-              <input type="checkbox" checked={form.featured || false} onChange={e => setForm({ ...form, featured: e.target.checked })} />
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)", letterSpacing: ".04em" }}>Featured</span>
-            </label>
+            <div style={{ display: "flex", gap: 24, marginBottom: 28 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" checked={form.featured || false} onChange={e => setForm({ ...form, featured: e.target.checked })} />
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)", letterSpacing: ".04em" }}>Featured</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" checked={form.ready || false} onChange={e => setForm({ ...form, ready: e.target.checked })} />
+                <span style={{ fontSize: 11, color: form.ready ? "#fff" : "rgba(255,255,255,.45)", letterSpacing: ".04em", fontWeight: form.ready ? 700 : 400 }}>Ready ✓</span>
+              </label>
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={saveProject} style={{ padding: "11px 28px", background: "#fff", color: "#000", border: "none", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", ...HN }}>
                 {saving ? "Saving..." : "Save project"}
