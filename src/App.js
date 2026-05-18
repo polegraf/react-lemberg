@@ -300,7 +300,7 @@ function PublicSite({ projects, seo, onAdmin }) {
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
               {filtered.map(p => (
-                <div key={p.id} onClick={() => p.ready && openProject(p)} style={{ cursor: p.ready ? "pointer" : "default", opacity: p.ready ? 1 : 0.6 }}>
+                <div key={p.id} onClick={() => p.ready && openProject(p)} style={{ cursor: p.ready ? "pointer" : "default" }}>
                   <ThumbMedia project={p} />
                   <div style={{ padding: "12px 0 4px" }}>
                     <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1.3 }}>{p.title}</div>
@@ -315,7 +315,7 @@ function PublicSite({ projects, seo, onAdmin }) {
                 const tall = i % 5 === 0 || i % 5 === 3;
                 return (
                   <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
-                    style={{ breakInside: "avoid", marginBottom: 20, cursor: p.ready ? "pointer" : "default", position: "relative", opacity: p.ready ? 1 : 0.6 }}>
+                    style={{ breakInside: "avoid", marginBottom: 20, cursor: p.ready ? "pointer" : "default", position: "relative" }}>
                     <div style={{ overflow: "hidden", background: "#111", position: "relative", aspectRatio: p.thumbnail || p.cover ? undefined : (tall ? "3/4" : "4/3") }}>
                       <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
                         <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
@@ -570,7 +570,9 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
     if (ni < 0 || ni >= arr.length) return;
     [arr[i], arr[ni]] = [arr[ni], arr[i]];
     setProjects(arr);
-    await db.saveProjects(arr);
+    if (window.confirm("Save new order?")) {
+      await db.saveProjects(arr);
+    }
   };
   const saveSeo = async () => {
     setSaving(true);
