@@ -572,6 +572,7 @@ function AdminPanel({ projects, setProjects, seo, setSeo, onBack, onSave }) {
     setProjects(arr);
     await db.saveProjects(arr);
   };
+  const saveSeo = async () => {
     setSaving(true);
     setSeo(seoForm);
     await db.saveSettings(seoForm);
