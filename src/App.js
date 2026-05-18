@@ -20,11 +20,14 @@ async function uploadFile(file) {
 
 const db = {
   async getProjects() {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=id`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
     const rows = await r.json();
-    return Array.isArray(rows) ? rows.map(r => ({ ...r.data, _dbId: r.id })) : [];
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map(r => ({ ...r.data, _dbId: r.id }))
+      .sort((a, b) => (a._order ?? 0) - (b._order ?? 0));
   },
   async saveProjects(projects) {
     // Safe: upsert all current projects, then delete removed ones
@@ -52,7 +55,8 @@ const db = {
       });
     }
     // Upsert existing or insert new
-    for (const project of projects) {
+    for (let idx = 0; idx < projects.length; idx++) {
+      const project = { ...projects[idx], _order: idx };
       const existingRow = Array.isArray(existing) ? existing.find(r => r.data?.id === project.id) : null;
       if (existingRow) {
         await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${existingRow.id}`, {
