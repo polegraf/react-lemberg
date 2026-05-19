@@ -216,14 +216,14 @@ function ContentBlock({ block, isMobile }) {
   return null;
 }
 
-function useScrollReveal(ref, delay = 0) {
+function useScrollReveal(ref) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setTimeout(() => setVisible(true), delay); obs.disconnect(); }
-    }, { threshold: 0.08 });
+      setVisible(entry.isIntersecting);
+    }, { threshold: 0.05 });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
@@ -232,13 +232,13 @@ function useScrollReveal(ref, delay = 0) {
 
 function RevealCard({ children, delay = 0, style = {}, ...props }) {
   const ref = useRef();
-  const visible = useScrollReveal(ref, delay);
+  const visible = useScrollReveal(ref);
   return (
     <div ref={ref} {...props} style={{
       ...style,
       opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(32px)",
-      transition: `opacity .7s cubic-bezier(.16,1,.3,1) ${delay}ms, transform .9s cubic-bezier(.16,1,.3,1) ${delay}ms`
+      transform: visible ? "translateY(0) scale(1)" : "translateY(24px) scale(0.98)",
+      transition: `opacity 1.1s cubic-bezier(.22,1,.36,1) ${delay}ms, transform 1.2s cubic-bezier(.22,1,.36,1) ${delay}ms`
     }}>
       {children}
     </div>
