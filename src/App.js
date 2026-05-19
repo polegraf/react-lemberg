@@ -314,24 +314,21 @@ function PublicSite({ projects, seo, onAdmin }) {
               ))}
             </div>
           ) : (
-            <div style={{ columns: "3 280px", columnGap: 20 }}>
-              {filtered.map((p, i) => {
-                const tall = i % 5 === 0 || i % 5 === 3;
-                return (
-                  <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
-                    style={{ breakInside: "avoid", marginBottom: 20, cursor: p.ready ? "pointer" : "default", position: "relative" }}>
-                    <div style={{ overflow: "hidden", background: "#111", position: "relative", aspectRatio: p.thumbnail || p.cover ? undefined : (tall ? "3/4" : "4/3") }}>
-                      <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
-                        <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
-                      </div>
-                    </div>
-                    <div style={{ padding: "12px 0 18px", background: "#000" }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 20, rowGap: 20 }}>
+              {filtered.map(p => (
+                <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
+                  style={{ cursor: p.ready ? "pointer" : "default", position: "relative" }}>
+                  <div style={{ overflow: "hidden", background: "#111", position: "relative" }}>
+                    <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
+                      <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
                     </div>
                   </div>
-                );
-              })}
+                  <div style={{ padding: "12px 0 18px", background: "#000" }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {filtered.length === 0 && <div style={{ textAlign: "center", padding: "100px 0", color: "rgba(255,255,255,.2)", fontSize: 13, letterSpacing: ".07em", textTransform: "uppercase" }}>No projects in this category</div>}
