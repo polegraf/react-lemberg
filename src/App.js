@@ -314,19 +314,23 @@ function PublicSite({ projects, seo, onAdmin }) {
               ))}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 20, rowGap: 20 }}>
-              {filtered.map(p => (
-                <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
-                  style={{ cursor: p.ready ? "pointer" : "default", position: "relative" }}>
-                  <div style={{ overflow: "hidden", background: "#111", position: "relative" }}>
-                    <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
-                      <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
+            <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+              {[0, 1, 2].map(col => (
+                <div key={col} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
+                  {filtered.filter((_, i) => i % 3 === col).map(p => (
+                    <div key={p.id} onClick={() => p.ready && openProject(p)} onMouseEnter={() => p.ready && setHovered(p.id)} onMouseLeave={() => setHovered(null)}
+                      style={{ cursor: p.ready ? "pointer" : "default", position: "relative" }}>
+                      <div style={{ overflow: "hidden", background: "#111" }}>
+                        <div style={{ transition: "transform .6s cubic-bezier(.16,1,.3,1)", transform: hovered === p.id ? "scale(1.03)" : "scale(1)" }}>
+                          <ThumbMedia project={p} style={{ width: "100%", display: "block" }} />
+                        </div>
+                      </div>
+                      <div style={{ padding: "12px 0 18px", background: "#000" }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ padding: "12px 0 18px", background: "#000" }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
-                  </div>
+                  ))}
                 </div>
               ))}
             </div>
