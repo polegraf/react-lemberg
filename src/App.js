@@ -216,6 +216,35 @@ function ContentBlock({ block, isMobile }) {
   return null;
 }
 
+function useScrollReveal(ref, delay = 0) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setTimeout(() => setVisible(true), delay); obs.disconnect(); }
+    }, { threshold: 0.08 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return visible;
+}
+
+function RevealCard({ children, delay = 0, style = {}, ...props }) {
+  const ref = useRef();
+  const visible = useScrollReveal(ref, delay);
+  return (
+    <div ref={ref} {...props} style={{
+      ...style,
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(32px)",
+      transition: `opacity .7s cubic-bezier(.16,1,.3,1) ${delay}ms, transform .9s cubic-bezier(.16,1,.3,1) ${delay}ms`
+    }}>
+      {children}
+    </div>
+  );
+}
+
 function PublicSite({ projects, seo, onAdmin }) {
   const [filter, setFilter] = useState("all");
   const [hovered, setHovered] = useState(null);
@@ -303,14 +332,14 @@ function PublicSite({ projects, seo, onAdmin }) {
           </div>
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-              {filtered.map(p => (
-                <div key={p.id} onClick={() => p.ready && openProject(p)} style={{ cursor: p.ready ? "pointer" : "default" }}>
+              {filtered.map((p, i) => (
+                <RevealCard key={p.id} delay={0} onClick={() => p.ready && openProject(p)} style={{ cursor: p.ready ? "pointer" : "default" }}>
                   <ThumbMedia project={p} />
                   <div style={{ padding: "12px 0 4px" }}>
                     <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1.3 }}>{p.title}</div>
                     <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".03em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
                   </div>
-                </div>
+                </RevealCard>
               ))}
             </div>
           ) : (
