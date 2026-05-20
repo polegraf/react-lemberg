@@ -337,7 +337,7 @@ function PublicSite({ projects, seo, onAdmin }) {
                   <ThumbMedia project={p} />
                   <div style={{ padding: "12px 0 4px" }}>
                     <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-.02em", lineHeight: 1.3 }}>{p.title}</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".03em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.45)", letterSpacing: ".03em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}{p.location || p.year ? ` · ${[p.location, p.year].filter(Boolean).join(" ")}` : ""}</div>
                   </div>
                 </RevealCard>
               ))}
@@ -359,7 +359,7 @@ function PublicSite({ projects, seo, onAdmin }) {
                       </div>
                       <div style={{ padding: "12px 0 18px", background: "#000" }}>
                         <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.01em" }}>{p.title}</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}</div>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", letterSpacing: ".05em", textTransform: "uppercase", marginTop: 4 }}>{p.subtitle}{p.location || p.year ? ` · ${[p.location, p.year].filter(Boolean).join(" ")}` : ""}</div>
                       </div>
                     </RevealCard>
                   ))}
